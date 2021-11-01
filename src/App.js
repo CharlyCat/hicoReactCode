@@ -1,6 +1,9 @@
 import './App.css';
 import 'bulma/css/bulma.min.css';
 import {Component} from "react";
+import {fetchEmployeeList} from "./GetEmployeeTable";
+import {updateExistingEmployee} from "./UpdateExistingEmployee";
+import {addNewExistingEmployee} from "./AddNewEmployee";
 
 class App extends Component {
     //...................................................................................................................................
@@ -10,7 +13,7 @@ class App extends Component {
     constructor() {
         super()
 
-        //Temp employee details (making up the tempEmployee)
+        //Temp employee details
         let tempEmployeeDetails =
             {
                 employeeID: "",
@@ -29,71 +32,27 @@ class App extends Component {
             tempEmployee: tempEmployeeDetails,
             currentSelectedEmployeeRow: -1,
             addEmployeeButtonEnabled: true, //True = Visible & False = Hidden
-            currentSaveMode:0, //Mode to indicate if Save must update existing or create new : 0 = Nothing set, 1 = Edit / Update, 2 = Add new //TODO Make Enum
+            currentSaveMode: 0, //Mode to indicate if Save must update existing or create new : 0 = Nothing set, 1 = Edit / Update, 2 = Add new //TODO Make Enum
             inputFormEnabled: false, //When first load application the form wont be loaded
-            firstTime:true
+            firstTime: true
         }
 
-        //BIND FUNC TO THIS STATE
-        //??????
+        //BIND API CALL FUNC TO THIS STATE
+        this.fetchEmployeeList = fetchEmployeeList.bind(this);
+        this.updateExistingEmployee = updateExistingEmployee.bind(this);
+        this.addNewExistingEmployee = addNewExistingEmployee.bind(this);
     }//end constructor
 
     componentWillMount() {
-        //Ensure default data in array is only load first time app started so not overwritten
-        if(this.state.firstTime=== true) {
-            //Temp : Employee list array
-            this.setState({
-                employeeListArray: [
-                    {
-                        employeeID: 1,
-                        firstName: "Charlene",
-                        lastName: "Barnes",
-                        salutation: "Ms",
-                        profileColour: "Blue",
-                        gender: "Female",
-                        grossSalary: "10 000"
-                    },
-                    {
-                        employeeID: 2,
-                        firstName: "Bob",
-                        lastName: "Beast",
-                        salutation: "Mr",
-                        profileColour: "Red",
-                        gender: "Male",
-                        grossSalary: "20 000"
-                    },
-                    {
-                        employeeID: 3,
-                        firstName: "John",
-                        lastName: "Jones",
-                        salutation: "Mr",
-                        profileColour: "Green",
-                        gender: "Male",
-                        grossSalary: "30 000"
-                    },
-                    {
-                        employeeID: 4,
-                        firstName: "Mary",
-                        lastName: "Jane",
-                        salutation: "Mrs",
-                        profileColour: "White",
-                        gender: "Female",
-                        grossSalary: "40 000"
-                    }
-                ]
-
-            });
-            this.setState({firstTime: false});
-        }//end of if
-
+        this.fetchEmployeeList();
     }//end componentWillMount
 
-    //.........................................................................................................................
-    // EVENT HANDLERS
-    //--------------------------------------------------------------------------------------------------------------------------
+//.........................................................................................................................
+// EVENT HANDLERS
+//--------------------------------------------------------------------------------------------------------------------------
 
-    //onClick Button_AddNewEmployee : User click button to add employee.
-    // Button will be set to false so hidden and user form will be triggered to display
+//onClick Button_AddNewEmployee : User click button to add employee.
+// Button will be set to false so hidden and user form will be triggered to display
     onAddNewEmployee = () => {
         //Set Save Mode status to 2 (add new employee record)
         this.setState({currentSaveMode: 2});
@@ -103,7 +62,7 @@ class App extends Component {
         this.setState({inputFormEnabled: true});
     }//end onAddNewEmployee
 
-    //onClick Employee Table Row
+//onClick Employee Table Row
     currentRowClick = (arrayIndex) => {
         //Get onClick table row array index and save into State
         let currentTableRow = arrayIndex;
@@ -158,7 +117,7 @@ class App extends Component {
         this.setState({currentSaveMode: 1});
     }//end currentRowClick
 
-    //Input Handler : Employee# / ID
+//Input Handler : Employee# / ID
     handleEmployeeIDInput = event => {
         event.preventDefault();
         let inputEmployeeID = event.target.value;
@@ -171,7 +130,7 @@ class App extends Component {
         });
     }// end of event handleEmployeeIDInput
 
-    //Input Handler : First name
+//Input Handler : First name
     handleFirstNameInput = event => {
         event.preventDefault();
         let inputFirstName = event.target.value;
@@ -184,7 +143,7 @@ class App extends Component {
         });
     }// end of event handleFirstNameInput
 
-    //Input Handler : Last name
+//Input Handler : Last name
     handleLastNameInput = event => {
         event.preventDefault();
         let inputLastName = event.target.value;
@@ -197,7 +156,7 @@ class App extends Component {
         });
     }// end of event handleLastNameInput
 
-    //Drop-down Input handler event change : Select salutation
+//Drop-down Input handler event change : Select salutation
     handleDownOptionSelection = event => {
         //Stop from clearing all functions binding that happens in constructor
         event.preventDefault();
@@ -209,7 +168,7 @@ class App extends Component {
         });
     }//end handleDownOptionSelection
 
-    //Radio Button Input handler event change : Select employee gender
+//Radio Button Input handler event change : Select employee gender
     handleRadioGenderSelection = event => {
         let selectedGender = event.target.value;
         console.log("Gender radio selection input =" + selectedGender);
@@ -219,7 +178,7 @@ class App extends Component {
         });
     }//end handleRadioGenderSelection
 
-    //Gross Salary Input handler: Enter numeric only salary
+//Gross Salary Input handler: Enter numeric only salary
     handleGrossSalaryInput = event => {
         //Stop from clearing all functions binding that happens in constructor
         event.preventDefault();
@@ -231,7 +190,7 @@ class App extends Component {
         });
     }//end handleGrossSalaryInput
 
-    //Profile Colour Input handler: select employee profile colour based on selection options
+//Profile Colour Input handler: select employee profile colour based on selection options
     handleRadioProfileSelection = event => {
         let selectedProfileColour = event.target.value;
         console.log("Selected Profile colour input =" + selectedProfileColour);
@@ -241,7 +200,7 @@ class App extends Component {
         });
     }//end handleRadioProfileSelection
 
-    //OnClick Save button : Determine if it a new employee record save or update existing record and set actions accordingly
+//OnClick Save button : Determine if it a new employee record save or update existing record and set actions accordingly
     onClickSaveButton = event => {
         console.log("onClickSaveButton was just clicked");
         //Get current SaveMode statue
@@ -250,22 +209,17 @@ class App extends Component {
         if (currentStatus === 1) {
             console.log("onClickSaveButton  is going to call the onClickUpdateEmployeeData event");
             this.onClickUpdateEmployeeData(event);
-        } else if (currentStatus === 2)
-        {
+        } else if (currentStatus === 2) {
             console.log("onClickSaveButton  is going to call the onClickSaveNewEmployee event");
             this.onClickSaveNewEmployee(event);
-        }
-        else
-        {
+        } else {
             console.log("onClickSaveButton - current SaveMode status error. Undefined")
         }
     }//end onClickSaveButton
 
-    //onClick Update Existing Employee Button : Update current employee details which was edited
+//onClick Update Existing Employee Button : Update current employee details which was edited
     onClickUpdateEmployeeData = () => {
         console.log("I'm in the onClickSaveNewEmployee method");
-        //TODO : Call saveEmployee API function call and send through input values to be saved
-        //TODO : This function will also clear the temp array input fields & make add employee button visible??
 
         //TODO : This is the temp temp process
         let copyOfArray = this.state.employeeListArray.slice(); //copy the array
@@ -278,6 +232,7 @@ class App extends Component {
         copyOfArray[currentArrayIndex] = tempEmployee;
 
         //TODO : API should be call and handle the update to DB & if successful then update local employeeListArray
+        // this.updateExistingEmployee(currentArrayIndex, tempEmployee.employeeID,tempEmployee.firstName,tempEmployee.lastName,tempEmployee.salutation,tempEmployee.profileColour,tempEmployee.gender,tempEmployee.grossSalary);
 
         //Clear the tempEmployee records
         this.clearEmployeeDataObj();
@@ -287,19 +242,19 @@ class App extends Component {
         //Set input form state so its hidden so that can verify that inputs where saved
         this.setState({inputFormEnabled: false});
         //Update complete - Set SaveMode to 0 (no longer set)
-        this.setState({currentSaveMode : 0});
+        this.setState({currentSaveMode: 0});
     }//end onClickUpdateEmployeeData
 
-    //onClick Save New Employee Button : Save input form data and create new employee & Make Add new employee button visible
+//onClick Save New Employee Button : Save input form data and create new employee & Make Add new employee button visible
     onClickSaveNewEmployee = () => {
         console.log("I'm in the onClickSaveNewEmployee method");
-        //TODO : Call saveEmployee API function call and send through input values to be saved
-        //TODO : This function will also clear the temp array input fields & make add employee button visible??
-
-        //TODO : This is the temp manual process
         let employeeArray = this.state.employeeListArray;
         let tempEmployee = this.state.tempEmployee;
 
+        //TODO : Call API function call and send through input values to be saved
+        //TODO: this.addNewExistingEmployee(tempEmployee.employeeID,tempEmployee.firstName,tempEmployee.lastName,tempEmployee.salutation,tempEmployee.profileColour,tempEmployee.gender,tempEmployee.grossSalary);
+
+        //TODO : This is the temp manual process
         employeeArray.push(tempEmployee);
         console.log("Employee array data =" + JSON.stringify(employeeArray));
 
@@ -314,10 +269,10 @@ class App extends Component {
         //Set input form state so its hidden so that can verify that inputs where saved
         this.setState({inputFormEnabled: false});
         //Save new complete - Set SaveMode to 0 (no longer set)
-        this.setState({currentSaveMode : 0});
+        this.setState({currentSaveMode: 0});
     }//end onClickSaveNewEmployee
 
-    //onClick Cancel New Employee Button : Cancel input form data and clear tempEmployee data & Make Add new employee button visible
+//onClick Cancel New Employee Button : Cancel input form data and clear tempEmployee data & Make Add new employee button visible
     clearEmployeeDataObj = event => {
         //Clear the tempEmployee fields
         let clearedTempEmployeeItemObj = {
@@ -333,11 +288,11 @@ class App extends Component {
         this.setState({tempEmployee: clearedTempEmployeeItemObj});
     }//end onClickCancelNewEmployee
 
-    //.................................................................................................................................
-    // POPULATE RENDER OBJECTS
-    //..................................................................................................................................
+//.................................................................................................................................
+// POPULATE RENDER OBJECTS
+//..................................................................................................................................
 
-    //Display Employee Button: Check state of button (active or disabled)
+//Display Employee Button: Check state of button (active or disabled)
     displayAddEmployeeButton = () => {
         let currentButtonStatus = this.state.addEmployeeButtonEnabled;
         //If true button is visible (form display information) else is false button is hidden (form input field active)
@@ -350,7 +305,7 @@ class App extends Component {
         }
     }//end displayAddEmployeeButton
 
-    //Generate table headers for employee table
+//Generate table headers for employee table
     displayTableHeaders = () => {
         let headerRow =
             <tr>
@@ -363,7 +318,7 @@ class App extends Component {
         return headerRow
     }//end displayTableHeaders
 
-    //Populate employee table :Extract rows from local state EmployeeList array so that they can be rendered into a table (result)
+//Populate employee table :Extract rows from local state EmployeeList array so that they can be rendered into a table (result)
     rowEmployeeDetails = () => {
 
         let employeeList = this.state.employeeListArray;
@@ -397,7 +352,7 @@ class App extends Component {
         }
     }//end rowEmployeeDetails
 
-    //Display Employee Information Form : to view/edit or add new employee
+//Display Employee Information Form : to view/edit or add new employee
     displayEmployeeDetailsForm = () => {
         let tempEmployeeInputs = this.state.tempEmployee;
         let inputFormStatus = this.state.inputFormEnabled;
@@ -544,7 +499,7 @@ class App extends Component {
         </form>
     }//end displayEmployeeDetailsForm
 
-    //Handle Table row colour (based on profile colour selection)
+//Handle Table row colour (based on profile colour selection)
     handleTableRowColour = (selectedProfileColour) => {
         //Set table colour based on employee selected profile colour
         if (selectedProfileColour === "White") {
@@ -558,7 +513,7 @@ class App extends Component {
         }
     }//end handleTableRowColour
 
-    //Handle Save button on input form display (based on profile colour selection)
+//Handle Save button on input form display (based on profile colour selection)
     handleSaveButtonColour = () => {
         let selectedProfileColour = this.state.tempEmployee.profileColour;
         console.log("Inside handleSaveButtonColour");
@@ -629,7 +584,7 @@ class App extends Component {
         )
     }
 
-    //end render
+//end render
 
 } //end class App
 
