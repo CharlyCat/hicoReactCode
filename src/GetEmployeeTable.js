@@ -4,7 +4,7 @@ import React from "react";
 // GET Employee list (MySQL EmployeeTable)
 export const fetchEmployeeList = async function () {
     console.log("Im in fetchEmployeeList API class");
-
+    //Temp employeeList data (getemployeelist API should populate state array)
     let employeeList =
         [
             {
@@ -46,19 +46,10 @@ export const fetchEmployeeList = async function () {
         ]
 
     this.setState({employeeListArray: employeeList})
-/*
-    const baseURL = "http://localhost:8080/java_api_war_exploded/getemployeelist";
-
-    axios.get(baseURL, {withCredentials: true})
-        .then(res => {
-            console.log("API returned... saving the data")
-            const employList = res.data;
-            console.log("res then section  results = " + JSON.stringify(employList));
-            this.setState({employeeListArray: employList});
-        })*/
 }//end fetchEmployeeList
 
 /*
+const baseURL = "http://localhost:8080/java_api_war_exploded/getemployeelist";
 axios.get(baseURL, {withCredentials: true})
     .then(res => {
         console.log("API returned... saving the data")
@@ -68,9 +59,7 @@ axios.get(baseURL, {withCredentials: true})
     })
 --------------------------------------------------------------------------------
 const baseURL = "http://localhost:8080/java_api_war_exploded/getemployeelist";
-
 const [post, setPost] = React.useState(null);
-
 
 //Fetch data from Java API
 const employeeListResponse = await fetch('http://localhost:8080/java_api_war_exploded/getemployeelist', {
